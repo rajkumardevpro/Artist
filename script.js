@@ -32,15 +32,20 @@ hero.addEventListener('pointermove', e => {
 });
 hero.addEventListener('pointerleave', () => heroImage.style.transform = '');
 
-// Gallery entrance: intentionally short, so visitors are never held on a loading screen.
+// Interactive portal entrance. It is intentionally a simple tap, including on phones.
 const loader = document.getElementById('loader');
 const pct = document.getElementById('loaderPct');
 const enter = document.getElementById('enterSite');
+const enterText = document.getElementById('enterText');
 let progress = 0;
-const loading = setInterval(() => { progress = Math.min(100, progress + Math.ceil(Math.random()*14)); pct.textContent = String(progress).padStart(2,'0') + '%'; if(progress === 100){ clearInterval(loading); enter.disabled=false; enter.classList.add('ready'); enterText.textContent='HOLD TO ENTER'; } }, 95);
-function leaveLoader(){loader.classList.add('leave');document.body.classList.remove('loading');setTimeout(()=>loader.remove(),1000)}
-
-// Do not trap a returning visitor: Enter works immediately once visuals are ready.
+const loading = setInterval(() => {
+  progress = Math.min(100, progress + 10);
+  pct.textContent = String(progress).padStart(2,'0') + '%';
+  if(progress === 100){ clearInterval(loading); enter.disabled=false; enter.classList.add('ready'); enterText.textContent='ENTER ARTISTRY ALCHEMY'; }
+}, 95);
+function leaveLoader(){ loader.classList.add('leave'); setTimeout(()=>loader.remove(),1000); }
+enter.addEventListener('click',()=>{if(!enter.disabled)leaveLoader()});
+loader.addEventListener('contextmenu', e => e.preventDefault());
 // Public gallery sync: artworks published through admin.html appear here automatically.
 async function loadPublishedArtworks(){
   const configured = window.SUPABASE_URL && !window.SUPABASE_URL.startsWith('PASTE_');
@@ -59,18 +64,6 @@ async function loadPublishedArtworks(){
   });
 }
 loadPublishedArtworks();
-// Deliberate press-and-hold entrance for the immersive landing screen.
-const enterText = document.getElementById('enterText');
-let holdTimer;
-function beginHold(){if(!enter.classList.contains('ready'))return;enter.classList.add('holding');enterText.textContent='ENTERING…';holdTimer=setTimeout(leaveLoader,900)}
-function cancelHold(){clearTimeout(holdTimer);if(!loader.classList.contains('leave')){enter.classList.remove('holding');if(enter.classList.contains('ready'))enterText.textContent='HOLD TO ENTER';}}
-enter.addEventListener('pointerdown',e=>{e.preventDefault();beginHold()});
-enter.addEventListener('pointerup',cancelHold);enter.addEventListener('pointerleave',cancelHold);enter.addEventListener('pointercancel',cancelHold);
-// On a phone, long-press opens the browser's copy/download menu. Use one deliberate tap instead.
-loader.addEventListener('contextmenu', e => e.preventDefault());
-enter.addEventListener('pointerdown', e => {
-  if (e.pointerType === 'touch' && enter.classList.contains('ready')) { e.preventDefault(); leaveLoader(); }
-});
 // Scroll-responsive 3D gallery depth. Only a small transform is used to keep scrolling smooth.
 let cardTick = false;
 function animateCardsOnScroll(){
