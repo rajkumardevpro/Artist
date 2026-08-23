@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://rajkumardevpro.github.io/Artist/sitemap.xml
